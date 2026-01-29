@@ -482,7 +482,7 @@
     <script>
         const ESSALE_API = 'https://essale.ly/api/tick';
 
-        // Fallback rates (will be updated from Revolut API)
+        // Fallback rates (will be updated from Open Exchange Rates API)
         let INTERNATIONAL_RATES_BASE_USD = {
             EUR: 0.92, GBP: 0.79, JPY: 149.50, CHF: 0.88, CAD: 1.36,
             AUD: 1.53, CNY: 7.24, INR: 83.12, SAR: 3.75, AED: 3.67,
@@ -490,7 +490,8 @@
             BHD: 0.38, OMR: 0.38, JOD: 0.71, TRY: 32.15, RUB: 92.50
         };
 
-        const REVOLUT_API = 'https://www.revolut.com/api/exchange/quote';
+        const OPEN_EXCHANGE_API = 'https://openexchangerates.org/api/latest.json';
+        const OPEN_EXCHANGE_APP_ID = '30caf7330a1440d39054f18c720c6a43';
 
         const CURRENCY_INFO = {
             USD: { name: 'US Dollar', flag: '🇺🇸', symbol: '$' },
@@ -543,34 +544,28 @@
         const currencyList = document.getElementById('currencyList');
         const closeModal = document.getElementById('closeModal');
 
-        async function fetchRevolutRate(fromCurrency, toCurrency) {
+        async function fetchInternationalRates() {
             try {
-                const url = `${REVOLUT_API}?amount=10000&country=GB&fromCurrency=${fromCurrency}&isRecipientAmount=false&toCurrency=${toCurrency}`;
+                const url = `${OPEN_EXCHANGE_API}?app_id=${OPEN_EXCHANGE_APP_ID}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('API error');
                 const data = await response.json();
-                // Calculate rate from the response
-                if (data.to && data.to.amount) {
-                    return data.to.amount / 10000;
+
+                // Update rates from API response
+                if (data.rates) {
+                    const currencies = Object.keys(INTERNATIONAL_RATES_BASE_USD);
+                    for (const currency of currencies) {
+                        if (data.rates[currency]) {
+                            INTERNATIONAL_RATES_BASE_USD[currency] = data.rates[currency];
+                        }
+                    }
                 }
-                return null;
+
+                updateConversion();
+                updateRatesGrid();
             } catch (err) {
-                return null;
+                console.log('Failed to fetch international rates, using fallback');
             }
-        }
-
-        async function fetchInternationalRates() {
-            const currencies = Object.keys(INTERNATIONAL_RATES_BASE_USD);
-
-            for (const currency of currencies) {
-                const rate = await fetchRevolutRate('USD', currency);
-                if (rate) {
-                    INTERNATIONAL_RATES_BASE_USD[currency] = rate;
-                }
-            }
-
-            updateConversion();
-            updateRatesGrid();
         }
 
         async function fetchLydRate() {
