@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صراف - Currency Exchange</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f4c3a, #1a1a2e, #16213e);
+            color: #fff;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 3px;
+            margin-top: 5px;
+        }
+
+        .live-rate {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            gap: 8px;
+        }
+
+        .live-dot {
+            color: #4ade80;
+            font-size: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 8px;
+        }
+
+        .label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+            text-align: right;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input {
+            flex: 1;
+            padding: 16px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 16px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .input:focus {
+            outline: 2px solid #4ade80;
+        }
+
+        .result-display {
+            flex: 1;
+            padding: 16px;
+            background: rgba(74, 222, 128, 0.2);
+            border-radius: 16px;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-text {
+            font-size: 28px;
+            font-weight: 600;
+            color: #4ade80;
+            direction: ltr;
+        }
+
+        .currency-btn {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            cursor: pointer;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .currency-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .btn-flag {
+            font-size: 24px;
+        }
+
+        .btn-code {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .btn-arrow {
+            font-size: 10px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .swap-container {
+            display: flex;
+            justify-content: center;
+            margin: 8px 0;
+        }
+
+        .swap-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #4ade80;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(74, 222, 128, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .swap-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(74, 222, 128, 0.5);
+        }
+
+        .rate-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            direction: ltr;
+        }
+
+        .rates-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .rates-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: right;
+        }
+
+        .rates-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .rate-card {
+            padding: 12px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .rate-flag {
+            font-size: 28px;
+        }
+
+        .rate-code {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            margin-top: 4px;
+        }
+
+        .rate-value {
+            font-size: 12px;
+            color: #4ade80;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: #f87171;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .last-update {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+        }
+
+        .refresh-btn {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .credit {
+            margin-top: 16px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: flex-end;
+            align-items: flex-end;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-height: 70vh;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .currency-list {
+            max-height: calc(70vh - 80px);
+            overflow-y: auto;
+        }
+
+        .currency-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .currency-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .currency-item.selected {
+            background: rgba(74, 222, 128, 0.15);
+        }
+
+        .currency-item .flag {
+            font-size: 32px;
+            margin-left: 16px;
+        }
+
+        .currency-details {
+            flex: 1;
+        }
+
+        .currency-code {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .currency-name {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 2px;
+        }
+
+        .checkmark {
+            font-size: 20px;
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(74, 222, 128, 0.3);
+            border-radius: 50%;
+            border-top-color: #4ade80;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">💱 صراف</h1>
+            <p class="subtitle">CURRENCY EXCHANGE</p>
+            <div class="live-rate" id="liveRate" style="display: none;">
+                <span class="live-dot">●</span>
+                <span id="liveRateText">USD/LYD: --</span>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="card">
+            <!-- From Section -->
+            <div class="section">
+                <div class="label">من</div>
+                <div class="input-row">
+                    <input type="number" class="input" id="amount" value="1" placeholder="0">
+                    <button class="currency-btn" id="fromBtn">
+                        <span class="btn-flag" id="fromFlag">🇺🇸</span>
+                        <span class="btn-code" id="fromCode">USD</span>
+                        <span class="btn-arrow">▼</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Swap Button -->
+            <div class="swap-container">
+                <button class="swap-btn" id="swapBtn">⇅</button>
+            </div>
+
+            <!-- To Section -->
+            <div class="section">
+                <div class="label">إلى</div>
+                <div class="input-row">
+                    <div class="result-display">
+                        <span class="result-text" id="result">--</span>
+                    </div>
+                    <button class="currency-btn" id="toBtn">
+                        <span class="btn-flag" id="toFlag">🇱🇾</span>
+                        <span class="btn-code" id="toCode">LYD</span>
+                        <span class="btn-arrow">▼</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Rate Info -->
+            <div class="rate-info" id="rateInfo">1 USD = -- LYD</div>
+        </div>
+
+        <!-- Popular Rates -->
+        <div class="rates-card">
+            <div class="rates-title">🇱🇾 أسعار الدينار الليبي</div>
+            <div class="rates-grid" id="ratesGrid"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="error" id="error" style="display: none;"></div>
+            <div class="last-update" id="lastUpdate"></div>
+            <button class="refresh-btn" id="refreshBtn">🔄 تحديث الأسعار</button>
+            <p class="credit">أسعار الدينار من essale.ly • سوق المشير</p>
+        </div>
+    </div>
+
+    <!-- Currency Picker Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">اختر العملة</span>
+                <button class="close-btn" id="closeModal">✕</button>
+            </div>
+            <div class="currency-list" id="currencyList"></div>
+        </div>
+    </div>
+
+    <script>
+        const ESSALE_API = 'https://essale.ly/api/tick';
+
+        const INTERNATIONAL_RATES_BASE_USD = {
+            EUR: 0.92, GBP: 0.79, JPY: 149.50, CHF: 0.88, CAD: 1.36,
+            AUD: 1.53, CNY: 7.24, INR: 83.12, SAR: 3.75, AED: 3.67,
+            EGP: 30.90, TND: 3.12, MAD: 10.05, KWD: 0.31, QAR: 3.64,
+            BHD: 0.38, OMR: 0.38, JOD: 0.71, TRY: 32.15, RUB: 92.50
+        };
+
+        const CURRENCY_INFO = {
+            USD: { name: 'US Dollar', flag: '🇺🇸', symbol: '$' },
+            LYD: { name: 'Libyan Dinar', flag: '🇱🇾', symbol: 'ل.د' },
+            EUR: { name: 'Euro', flag: '🇪🇺', symbol: '€' },
+            GBP: { name: 'British Pound', flag: '🇬🇧', symbol: '£' },
+            JPY: { name: 'Japanese Yen', flag: '🇯🇵', symbol: '¥' },
+            CHF: { name: 'Swiss Franc', flag: '🇨🇭', symbol: 'Fr' },
+            CAD: { name: 'Canadian Dollar', flag: '🇨🇦', symbol: 'C$' },
+            AUD: { name: 'Australian Dollar', flag: '🇦🇺', symbol: 'A$' },
+            CNY: { name: 'Chinese Yuan', flag: '🇨🇳', symbol: '¥' },
+            INR: { name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹' },
+            SAR: { name: 'Saudi Riyal', flag: '🇸🇦', symbol: '﷼' },
+            AED: { name: 'UAE Dirham', flag: '🇦🇪', symbol: 'د.إ' },
+            EGP: { name: 'Egyptian Pound', flag: '🇪🇬', symbol: 'E£' },
+            TND: { name: 'Tunisian Dinar', flag: '🇹🇳', symbol: 'د.ت' },
+            MAD: { name: 'Moroccan Dirham', flag: '🇲🇦', symbol: 'د.م.' },
+            KWD: { name: 'Kuwaiti Dinar', flag: '🇰🇼', symbol: 'د.ك' },
+            QAR: { name: 'Qatari Riyal', flag: '🇶🇦', symbol: '﷼' },
+            BHD: { name: 'Bahraini Dinar', flag: '🇧🇭', symbol: '.د.ب' },
+            OMR: { name: 'Omani Rial', flag: '🇴🇲', symbol: '﷼' },
+            JOD: { name: 'Jordanian Dinar', flag: '🇯🇴', symbol: 'د.ا' },
+            TRY: { name: 'Turkish Lira', flag: '🇹🇷', symbol: '₺' },
+            RUB: { name: 'Russian Ruble', flag: '🇷🇺', symbol: '₽' }
+        };
+
+        let lydRate = null;
+        let fromCurrency = 'USD';
+        let toCurrency = 'LYD';
+        let currentPicker = null;
+
+        // DOM Elements
+        const amountInput = document.getElementById('amount');
+        const resultEl = document.getElementById('result');
+        const rateInfoEl = document.getElementById('rateInfo');
+        const fromBtn = document.getElementById('fromBtn');
+        const toBtn = document.getElementById('toBtn');
+        const fromFlag = document.getElementById('fromFlag');
+        const fromCode = document.getElementById('fromCode');
+        const toFlag = document.getElementById('toFlag');
+        const toCode = document.getElementById('toCode');
+        const swapBtn = document.getElementById('swapBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const liveRate = document.getElementById('liveRate');
+        const liveRateText = document.getElementById('liveRateText');
+        const lastUpdate = document.getElementById('lastUpdate');
+        const errorEl = document.getElementById('error');
+        const ratesGrid = document.getElementById('ratesGrid');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const currencyList = document.getElementById('currencyList');
+        const closeModal = document.getElementById('closeModal');
+
+        async function fetchLydRate() {
+            try {
+                errorEl.style.display = 'none';
+                const response = await fetch(ESSALE_API);
+                const data = await response.json();
+
+                if (data && data.buy) {
+                    lydRate = parseFloat(data.buy);
+                } else if (data && data.rate) {
+                    lydRate = parseFloat(data.rate);
+                } else if (data && data.price) {
+                    lydRate = parseFloat(data.price);
+                } else if (data && data.usd) {
+                    lydRate = parseFloat(data.usd);
+                } else if (typeof data === 'number') {
+                    lydRate = data;
+                } else if (Array.isArray(data) && data.length > 0) {
+                    lydRate = parseFloat(data[0].buy || data[0].rate || data[0].price || 4.85);
+                } else {
+                    lydRate = 4.85;
+                }
+
+                liveRate.style.display = 'inline-flex';
+                liveRateText.textContent = `USD/LYD: ${lydRate.toFixed(2)}`;
+                lastUpdate.textContent = `آخر تحديث: ${new Date().toLocaleTimeString('ar-LY')}`;
+                updateConversion();
+                updateRatesGrid();
+            } catch (err) {
+                lydRate = 4.85;
+                errorEl.textContent = 'فشل تحميل السعر - استخدام سعر افتراضي';
+                errorEl.style.display = 'block';
+                liveRate.style.display = 'inline-flex';
+                liveRateText.textContent = `USD/LYD: ${lydRate.toFixed(2)}`;
+                updateConversion();
+                updateRatesGrid();
+            }
+        }
+
+        function getAllRates() {
+            const rates = { USD: 1, ...INTERNATIONAL_RATES_BASE_USD };
+            if (lydRate) rates.LYD = lydRate;
+            return rates;
+        }
+
+        function convert(amt, from, to) {
+            const rates = getAllRates();
+            if (!rates[from] || !rates[to]) return 0;
+            const inUsd = parseFloat(amt) / rates[from];
+            return inUsd * rates[to];
+        }
+
+        function updateConversion() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const result = convert(amount, fromCurrency, toCurrency);
+            resultEl.textContent = result.toFixed(2);
+            rateInfoEl.textContent = `1 ${fromCurrency} = ${convert(1, fromCurrency, toCurrency).toFixed(4)} ${toCurrency}`;
+        }
+
+        function updateRatesGrid() {
+            const popularCurrencies = ['USD', 'EUR', 'GBP', 'SAR', 'EGP', 'TRY'];
+            ratesGrid.innerHTML = popularCurrencies.map(code => {
+                const rate = convert(1, code, 'LYD');
+                return `
+                    <div class="rate-card">
+                        <div class="rate-flag">${CURRENCY_INFO[code].flag}</div>
+                        <div class="rate-code">${code}</div>
+                        <div class="rate-value">${rate.toFixed(2)} LYD</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCurrencyButtons() {
+            fromFlag.textContent = CURRENCY_INFO[fromCurrency].flag;
+            fromCode.textContent = fromCurrency;
+            toFlag.textContent = CURRENCY_INFO[toCurrency].flag;
+            toCode.textContent = toCurrency;
+        }
+
+        function openPicker(type) {
+            currentPicker = type;
+            const selected = type === 'from' ? fromCurrency : toCurrency;
+
+            currencyList.innerHTML = Object.keys(CURRENCY_INFO).map(code => `
+                <div class="currency-item ${code === selected ? 'selected' : ''}" data-code="${code}">
+                    <span class="flag">${CURRENCY_INFO[code].flag}</span>
+                    <div class="currency-details">
+                        <div class="currency-code">${code}</div>
+                        <div class="currency-name">${CURRENCY_INFO[code].name}</div>
+                    </div>
+                    ${code === selected ? '<span class="checkmark">✓</span>' : ''}
+                </div>
+            `).join('');
+
+            modalOverlay.classList.add('active');
+        }
+
+        function closePicker() {
+            modalOverlay.classList.remove('active');
+            currentPicker = null;
+        }
+
+        function selectCurrency(code) {
+            if (currentPicker === 'from') {
+                fromCurrency = code;
+            } else {
+                toCurrency = code;
+            }
+            updateCurrencyButtons();
+            updateConversion();
+            closePicker();
+        }
+
+        // Event Listeners
+        amountInput.addEventListener('input', updateConversion);
+
+        fromBtn.addEventListener('click', () => openPicker('from'));
+        toBtn.addEventListener('click', () => openPicker('to'));
+
+        swapBtn.addEventListener('click', () => {
+            [fromCurrency, toCurrency] = [toCurrency, fromCurrency];
+            updateCurrencyButtons();
+            updateConversion();
+        });
+
+        refreshBtn.addEventListener('click', () => {
+            refreshBtn.innerHTML = '⏳ تحديث الأسعار';
+            fetchLydRate().then(() => {
+                refreshBtn.innerHTML = '🔄 تحديث الأسعار';
+            });
+        });
+
+        closeModal.addEventListener('click', closePicker);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closePicker();
+        });
+
+        currencyList.addEventListener('click', (e) => {
+            const item = e.target.closest('.currency-item');
+            if (item) selectCurrency(item.dataset.code);
+        });
+
+        // Initialize
+        fetchLydRate();
+        setInterval(fetchLydRate, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
