@@ -544,18 +544,11 @@
                 const response = await fetch(ESSALE_API);
                 const data = await response.json();
 
-                if (data && data.buy) {
-                    lydRate = parseFloat(data.buy);
-                } else if (data && data.rate) {
-                    lydRate = parseFloat(data.rate);
-                } else if (data && data.price) {
-                    lydRate = parseFloat(data.price);
-                } else if (data && data.usd) {
-                    lydRate = parseFloat(data.usd);
-                } else if (typeof data === 'number') {
-                    lydRate = data;
-                } else if (Array.isArray(data) && data.length > 0) {
-                    lydRate = parseFloat(data[0].buy || data[0].rate || data[0].price || 4.85);
+                // API returns: p = buy price (LYD per USD), v = sell price
+                if (data && data.p) {
+                    lydRate = parseFloat(data.p);
+                } else if (data && data.v) {
+                    lydRate = parseFloat(data.v);
                 } else {
                     lydRate = 4.85;
                 }
