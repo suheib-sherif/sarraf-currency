@@ -482,12 +482,15 @@
     <script>
         const ESSALE_API = 'https://essale.ly/api/tick';
 
-        const INTERNATIONAL_RATES_BASE_USD = {
+        // Fallback rates (will be updated from Revolut API)
+        let INTERNATIONAL_RATES_BASE_USD = {
             EUR: 0.92, GBP: 0.79, JPY: 149.50, CHF: 0.88, CAD: 1.36,
             AUD: 1.53, CNY: 7.24, INR: 83.12, SAR: 3.75, AED: 3.67,
             EGP: 30.90, TND: 3.12, MAD: 10.05, KWD: 0.31, QAR: 3.64,
             BHD: 0.38, OMR: 0.38, JOD: 0.71, TRY: 32.15, RUB: 92.50
         };
+
+        const REVOLUT_API = 'https://www.revolut.com/api/exchange/quote';
 
         const CURRENCY_INFO = {
             USD: { name: 'US Dollar', flag: '🇺🇸', symbol: '$' },
@@ -539,6 +542,36 @@
         const modalOverlay = document.getElementById('modalOverlay');
         const currencyList = document.getElementById('currencyList');
         const closeModal = document.getElementById('closeModal');
+
+        async function fetchRevolutRate(fromCurrency, toCurrency) {
+            try {
+                const url = `${REVOLUT_API}?amount=10000&country=GB&fromCurrency=${fromCurrency}&isRecipientAmount=false&toCurrency=${toCurrency}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                // Calculate rate from the response
+                if (data.to && data.to.amount) {
+                    return data.to.amount / 10000;
+                }
+                return null;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function fetchInternationalRates() {
+            const currencies = Object.keys(INTERNATIONAL_RATES_BASE_USD);
+
+            for (const currency of currencies) {
+                const rate = await fetchRevolutRate('USD', currency);
+                if (rate) {
+                    INTERNATIONAL_RATES_BASE_USD[currency] = rate;
+                }
+            }
+
+            updateConversion();
+            updateRatesGrid();
+        }
 
         async function fetchLydRate() {
             try {
@@ -698,7 +731,9 @@
 
         // Initialize
         fetchLydRate();
+        fetchInternationalRates();
         setInterval(fetchLydRate, 5 * 60 * 1000);
+        setInterval(fetchInternationalRates, 10 * 60 * 1000);
     </script>
 </body>
 </html>
