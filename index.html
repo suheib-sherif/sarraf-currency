@@ -51,6 +51,7 @@
             background: rgba(255,255,255,0.15);
             border-radius: 20px;
             gap: 8px;
+            direction: ltr;
         }
 
         .live-dot {
@@ -85,6 +86,7 @@
 
         .input-row {
             display: flex;
+            flex-direction: row-reverse;
             align-items: center;
             gap: 12px;
         }
@@ -119,6 +121,7 @@
             min-height: 60px;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
         }
 
         .result-text {
@@ -130,6 +133,7 @@
 
         .currency-btn {
             display: flex;
+            flex-direction: row-reverse;
             align-items: center;
             padding: 14px 16px;
             background: rgba(255,255,255,0.15);
@@ -162,7 +166,7 @@
         .swap-container {
             display: flex;
             justify-content: center;
-            margin: 8px 0;
+            margin: 12px 0;
         }
 
         .swap-btn {
@@ -172,7 +176,7 @@
             background: #4ade80;
             border: none;
             color: #fff;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(74, 222, 128, 0.4);
@@ -220,6 +224,13 @@
             background: rgba(255,255,255,0.08);
             border-radius: 12px;
             text-align: center;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .rate-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
         }
 
         .rate-flag {
@@ -396,8 +407,8 @@
             <h1 class="title">💱 صراف</h1>
             <p class="subtitle">CURRENCY EXCHANGE</p>
             <div class="live-rate" id="liveRate" style="display: none;">
-                <span class="live-dot">●</span>
                 <span id="liveRateText">USD/LYD: --</span>
+                <span class="live-dot">●</span>
             </div>
         </div>
 
@@ -418,7 +429,7 @@
 
             <!-- Swap Button -->
             <div class="swap-container">
-                <button class="swap-btn" id="swapBtn">⇅</button>
+                <button class="swap-btn" id="swapBtn">↑↓</button>
             </div>
 
             <!-- To Section -->
@@ -479,12 +490,12 @@
         const CURRENCY_INFO = {
             USD: { name: 'US Dollar', flag: '🇺🇸', symbol: '$' },
             LYD: { name: 'Libyan Dinar', flag: '🇱🇾', symbol: 'ل.د' },
+            AUD: { name: 'Australian Dollar', flag: '🇦🇺', symbol: 'A$' },
             EUR: { name: 'Euro', flag: '🇪🇺', symbol: '€' },
             GBP: { name: 'British Pound', flag: '🇬🇧', symbol: '£' },
             JPY: { name: 'Japanese Yen', flag: '🇯🇵', symbol: '¥' },
             CHF: { name: 'Swiss Franc', flag: '🇨🇭', symbol: 'Fr' },
             CAD: { name: 'Canadian Dollar', flag: '🇨🇦', symbol: 'C$' },
-            AUD: { name: 'Australian Dollar', flag: '🇦🇺', symbol: 'A$' },
             CNY: { name: 'Chinese Yuan', flag: '🇨🇳', symbol: '¥' },
             INR: { name: 'Indian Rupee', flag: '🇮🇳', symbol: '₹' },
             SAR: { name: 'Saudi Riyal', flag: '🇸🇦', symbol: '﷼' },
@@ -586,11 +597,11 @@
         }
 
         function updateRatesGrid() {
-            const popularCurrencies = ['USD', 'EUR', 'GBP', 'SAR', 'EGP', 'TRY'];
+            const popularCurrencies = ['AUD', 'USD', 'EUR', 'GBP', 'SAR', 'EGP'];
             ratesGrid.innerHTML = popularCurrencies.map(code => {
                 const rate = convert(1, code, 'LYD');
                 return `
-                    <div class="rate-card">
+                    <div class="rate-card" data-code="${code}">
                         <div class="rate-flag">${CURRENCY_INFO[code].flag}</div>
                         <div class="rate-code">${code}</div>
                         <div class="rate-value">${rate.toFixed(2)} LYD</div>
@@ -667,6 +678,17 @@
         currencyList.addEventListener('click', (e) => {
             const item = e.target.closest('.currency-item');
             if (item) selectCurrency(item.dataset.code);
+        });
+
+        // Rate card click to convert
+        ratesGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.rate-card');
+            if (card) {
+                fromCurrency = card.dataset.code;
+                toCurrency = 'LYD';
+                updateCurrencyButtons();
+                updateConversion();
+            }
         });
 
         // Initialize
