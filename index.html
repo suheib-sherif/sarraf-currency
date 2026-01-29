@@ -86,13 +86,13 @@
 
         .input-row {
             display: flex;
-            flex-direction: row;
             align-items: center;
             gap: 12px;
         }
 
         .input {
             flex: 1;
+            min-width: 0;
             padding: 16px;
             font-size: 28px;
             font-weight: 600;
@@ -100,7 +100,7 @@
             background: rgba(255,255,255,0.1);
             border: none;
             border-radius: 16px;
-            text-align: left;
+            text-align: right;
             direction: ltr;
         }
 
@@ -114,6 +114,7 @@
 
         .result-display {
             flex: 1;
+            min-width: 0;
             padding: 16px;
             background: rgba(74, 222, 128, 0.2);
             border-radius: 16px;
@@ -121,7 +122,7 @@
             min-height: 60px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: flex-end;
         }
 
         .result-text {
@@ -142,6 +143,7 @@
             cursor: pointer;
             gap: 8px;
             transition: background 0.2s;
+            flex-shrink: 0;
         }
 
         .currency-btn:hover {
@@ -418,12 +420,12 @@
             <div class="section">
                 <div class="label">من</div>
                 <div class="input-row">
-                    <input type="number" class="input" id="amount" value="1" placeholder="0">
                     <button class="currency-btn" id="fromBtn">
-                        <span class="btn-flag" id="fromFlag">🇺🇸</span>
-                        <span class="btn-code" id="fromCode">USD</span>
                         <span class="btn-arrow">▼</span>
+                        <span class="btn-code" id="fromCode">USD</span>
+                        <span class="btn-flag" id="fromFlag">🇺🇸</span>
                     </button>
+                    <input type="number" class="input" id="amount" value="1" placeholder="0">
                 </div>
             </div>
 
@@ -436,14 +438,14 @@
             <div class="section">
                 <div class="label">إلى</div>
                 <div class="input-row">
+                    <button class="currency-btn" id="toBtn">
+                        <span class="btn-arrow">▼</span>
+                        <span class="btn-code" id="toCode">LYD</span>
+                        <span class="btn-flag" id="toFlag">🇱🇾</span>
+                    </button>
                     <div class="result-display">
                         <span class="result-text" id="result">--</span>
                     </div>
-                    <button class="currency-btn" id="toBtn">
-                        <span class="btn-flag" id="toFlag">🇱🇾</span>
-                        <span class="btn-code" id="toCode">LYD</span>
-                        <span class="btn-arrow">▼</span>
-                    </button>
                 </div>
             </div>
 
@@ -541,8 +543,18 @@
         async function fetchLydRate() {
             try {
                 errorEl.style.display = 'none';
-                const response = await fetch(ESSALE_API);
-                const data = await response.json();
+
+                // Try direct fetch first, then CORS proxy as fallback
+                let data;
+                try {
+                    const response = await fetch(ESSALE_API);
+                    data = await response.json();
+                } catch (corsErr) {
+                    // Use CORS proxy as fallback
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(ESSALE_API);
+                    const response = await fetch(proxyUrl);
+                    data = await response.json();
+                }
 
                 // API returns: p = buy price (LYD per USD), v = sell price
                 if (data && data.p) {
@@ -550,7 +562,7 @@
                 } else if (data && data.v) {
                     lydRate = parseFloat(data.v);
                 } else {
-                    lydRate = 4.85;
+                    lydRate = 9.13; // Current approximate rate
                 }
 
                 liveRate.style.display = 'inline-flex';
@@ -559,7 +571,7 @@
                 updateConversion();
                 updateRatesGrid();
             } catch (err) {
-                lydRate = 4.85;
+                lydRate = 9.13; // Current approximate rate
                 errorEl.textContent = 'فشل تحميل السعر - استخدام سعر افتراضي';
                 errorEl.style.display = 'block';
                 liveRate.style.display = 'inline-flex';
